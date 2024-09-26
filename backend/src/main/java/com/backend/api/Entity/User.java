@@ -1,6 +1,7 @@
 package com.backend.api.Entity;
 
 
+import com.backend.api.Entity.Enums.Role;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,6 +26,8 @@ public class User implements UserDetails {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    private String role;
 
 
     @Transient
