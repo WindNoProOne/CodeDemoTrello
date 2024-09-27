@@ -13,7 +13,6 @@ import java.util.Date;
 @AllArgsConstructor
 @Table(name = "cards")
 public class Card {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -26,11 +25,12 @@ public class Card {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "position", nullable = false)
+    private Integer position;
+
     @Column(name = "description")
     private String description;
 
-    @Column(name = "is_active")
-    private Boolean isActive;
 
     @Temporal(TemporalType.DATE)
     @Column(name = "due_date")
@@ -40,7 +40,8 @@ public class Card {
     @Column(name = "create_date")
     private Date createDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "reminder_date")
-    private Date reminderDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "create_user", referencedColumnName = "idUser")
+    private User createUser;
 }

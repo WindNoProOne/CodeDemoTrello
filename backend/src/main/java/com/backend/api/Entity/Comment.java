@@ -26,6 +26,10 @@ public class Comment {
     @JoinColumn(name = "card_id", referencedColumnName = "id")
     private Card card;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "create_user", referencedColumnName = "idUser")
+    private User createUser;
+
     @Column(name = "comment", nullable = false)
     private String comment;
 }

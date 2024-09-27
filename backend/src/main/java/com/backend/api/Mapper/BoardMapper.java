@@ -20,7 +20,7 @@ public class BoardMapper {
         return boardToDto;
     }
 
-    public static  Board mapToBoard  (BoardDto boardDto) {
+    public static  Board mapToBoard (BoardDto boardDto) {
         if(boardDto == null) {
             return  null;
         }
