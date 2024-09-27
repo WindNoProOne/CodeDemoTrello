@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 
 @Entity
 @Data
@@ -26,10 +28,10 @@ public class Comment {
     @JoinColumn(name = "card_id", referencedColumnName = "id")
     private Card card;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "create_user", referencedColumnName = "idUser")
-    private User createUser;
-
     @Column(name = "comment", nullable = false)
     private String comment;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "create_date")
+    private Date createDate;
 }
