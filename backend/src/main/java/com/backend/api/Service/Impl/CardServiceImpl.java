@@ -1,11 +1,11 @@
 package com.backend.api.Service.Impl;
 
 import com.backend.api.Dto.Request.CardDto;
+import com.backend.api.Dto.Request.MoveCardDto;
 import com.backend.api.Entity.Board;
 import com.backend.api.Entity.Card;
 import com.backend.api.Entity.User;
 import com.backend.api.Exception.InvalidCardStateException;
-import com.backend.api.Exception.InvalidUserStateException;
 import com.backend.api.Mapper.CardMapper;
 import com.backend.api.Repository.BoardRepository;
 import com.backend.api.Repository.CardRepository;
@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.net.StandardSocketOptions;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +31,7 @@ public class CardServiceImpl implements CardService {
     private BoardRepository boardRepository;
     @Autowired
     private CardRepository cardRepository;
-    private   final static String USER_NOT_LOGGED_IN  ="User not logged in";
+    private final static String USER_NOT_LOGGED_IN = "User not logged in";
     private final static String BOARD_NOT_FOUND = "Board not found";
     private final static String CARD_NOT_FOUND = "CARD not found";
     private final static String CREATE_CARD_FALSE = "Create Card False";
@@ -57,6 +58,7 @@ public class CardServiceImpl implements CardService {
             throw new InvalidCardStateException(CREATE_CARD_FALSE);
         }
     }
+
     private int getNextPosition(Board board) {
         return cardRepository.findMaxPositionByBoard(board) + 1;
     }
@@ -70,10 +72,10 @@ public class CardServiceImpl implements CardService {
     @Override
     public Optional<CardDto> getDetailsCard(Integer cardId) {
         Optional<Card> cardOptional = cardRepository.findById(cardId);
-        if(cardOptional.isPresent()) {
+        if (cardOptional.isPresent()) {
             CardDto cardDto = CardMapper.mapToCardDto(cardOptional.get());
             return Optional.of(cardDto);
-        } else  {
+        } else {
             return Optional.empty();
         }
     }
@@ -96,15 +98,83 @@ public class CardServiceImpl implements CardService {
             Card updatedCard = cardRepository.save(existingCard);
             return Optional.of(CardMapper.mapToCardDto(updatedCard));
         } catch (Exception e) {
-            throw  new EntityNotFoundException(UPDATE_CARD_FALSE);
+            throw new EntityNotFoundException(UPDATE_CARD_FALSE);
         }
     }
 
     @Override
     public void deleteCard(Integer cardId) {
-        if(!cardRepository.existsById(cardId)) {
+        if (!cardRepository.existsById(cardId)) {
             throw new EntityNotFoundException();
         }
         cardRepository.deleteById(cardId);
     }
+
+    @Override
+    public boolean moveCard(MoveCardDto moveCardDto, Integer cardId) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new InvalidCardStateException("Card not found with id: " + cardId));
+        Integer newPosition = moveCardDto.getNewPosition();
+        Integer newBoardId = moveCardDto.getNewBoardId();
+        updateCardPositionAndBoard(card, newPosition, newBoardId);
+        return true;
+    }
+
+    private void updateCardPositionAndBoard(Card card, Integer newPosition, Integer newBoardId) {
+        Board currentBoard = card.getBoard();
+
+        if(card.getBoard().equals(newBoardId)) {
+            updateCardPosition(card.getPosition(), newPosition, currentBoard.getId());
+            card.setPosition(newPosition);
+        } else  {
+            updateCardPosition(card.getPosition(), null, currentBoard.getId());
+            updateCardPosition(null, newPosition, newBoardId);
+
+            //Update ID New Board
+            Board newBoard = new Board();
+            newBoard.setId(newBoardId);
+
+
+            card.setPosition(newPosition);
+            card.setBoard(newBoard);
+        }
+        cardRepository.save(card);
+    }
+
+    private void updateCardPosition(Integer currentPosition, Integer newPosition, Integer boardId) {
+        List<Card> cardsInBoard = cardRepository.findByBoardId(boardId);
+
+        if (newPosition != null) {
+            if (currentPosition == null) {
+                for (Card c : cardsInBoard) {
+                    if (c.getPosition() >= newPosition) {
+                        c.setPosition(c.getPosition() + 1);
+                        cardRepository.save(c);
+                    }
+                }
+            } else if (currentPosition < newPosition) {
+                for (Card c : cardsInBoard) {
+                    if (c.getPosition() > currentPosition && c.getPosition() <= newPosition) {
+                        c.setPosition(c.getPosition() - 1);
+                        cardRepository.save(c);
+                    }
+                }
+            } else if (currentPosition > newPosition) {
+                for (Card c : cardsInBoard) {
+                    if (c.getPosition() >= newPosition && c.getPosition() < currentPosition) {
+                        c.setPosition(c.getPosition() + 1);
+                        cardRepository.save(c);
+                    }
+                }
+            }
+        } else {
+            for (Card c : cardsInBoard) {
+                if (c.getPosition() > currentPosition) {
+                    c.setPosition(c.getPosition() - 1);
+                    cardRepository.save(c);
+                }
+            }
+        }
+    }
+
 }

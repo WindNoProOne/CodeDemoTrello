@@ -29,4 +29,5 @@ public class Board {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "create_user", referencedColumnName = "idUser")
     private User createUser;
+
 }

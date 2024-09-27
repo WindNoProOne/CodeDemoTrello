@@ -1,11 +1,9 @@
 package com.backend.api.Controller;
 
-import com.backend.api.Dto.Request.BoardDto;
 import com.backend.api.Dto.Request.CardDto;
+import com.backend.api.Dto.Request.MoveCardDto;
 import com.backend.api.Service.CardService;
-import io.micrometer.observation.transport.ResponseContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +39,21 @@ public class CardController {
         Optional<CardDto> updateCard = cardService.updateCard(cardDto, cardId);
         return updateCard.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+
+    @PutMapping("/card/move/{cardId}")
+    public ResponseEntity<String> moveCard(@PathVariable Integer cardId, @RequestBody MoveCardDto moveCardDto) {
+        try {
+            boolean moved = cardService.moveCard(moveCardDto, cardId);
+            if (moved) {
+                return ResponseEntity.ok("Card moved successfully");
+            } else {
+                return ResponseEntity.badRequest().body("Failed to move card");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/card/{cardId}")
