@@ -129,12 +129,9 @@ public class CardServiceImpl implements CardService {
         } else  {
             updateCardPosition(card.getPosition(), null, currentBoard.getId());
             updateCardPosition(null, newPosition, newBoardId);
-
             //Update ID New Board
             Board newBoard = new Board();
             newBoard.setId(newBoardId);
-
-
             card.setPosition(newPosition);
             card.setBoard(newBoard);
         }

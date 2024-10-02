@@ -26,6 +26,8 @@ public class Board {
     @Column(name = "create_date", nullable = false)
     private LocalDateTime createDate;
 
+    private Integer position;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "create_user", referencedColumnName = "idUser")
     private User createUser;

@@ -2,6 +2,7 @@ package com.backend.api.Controller;
 
 
 import com.backend.api.Dto.Request.BoardDto;
+import com.backend.api.Dto.Request.MoveBoardDto;
 import com.backend.api.Mapper.BoardMapper;
 import com.backend.api.Service.BoardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +51,24 @@ public class BoardController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/board/move/{boardId}")
+    public ResponseEntity<?> moveBoard (@PathVariable Integer boardId, @RequestBody MoveBoardDto moveBoardDto) {
+        try {
+            boolean moved = boardService.moveBoard(moveBoardDto,boardId);
+            if(moved) {
+                return  ResponseEntity.ok("Move Board Successfully");
+            } else  {
+                return  ResponseEntity.badRequest().body("Move Board False");
+            }
+        } catch (Exception e) {
+            return  ResponseEntity.status(500).body("Move Board False" + e.getMessage());
+        }
+    }
+
     @DeleteMapping("/board/{boardId}")
     public ResponseEntity<Void> deleteBoard(@PathVariable Integer boardId) {
         boardService.deleteBoard(boardId);
         return ResponseEntity.noContent().build();
     }
+
 }

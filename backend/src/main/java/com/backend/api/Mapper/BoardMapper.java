@@ -16,6 +16,7 @@ public class BoardMapper {
         boardToDto.setId(board.getId());
         boardToDto.setName(board.getName());
         boardToDto.setCreateDate(board.getCreateDate());
+        boardToDto.setPosition(board.getPosition());
         boardToDto.setCreateUserId(board.getCreateUser() != null ? board.getCreateUser().getId() : null);
         return boardToDto;
     }
@@ -28,6 +29,7 @@ public class BoardMapper {
         Board board = new Board();
         board.setId(boardDto.getId());
         board.setName(boardDto.getName());
+        board.setPosition(board.getPosition());
         board.setCreateDate(boardDto.getCreateDate());
         return board;
     }

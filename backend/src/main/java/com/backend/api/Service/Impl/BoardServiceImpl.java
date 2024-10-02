@@ -1,8 +1,10 @@
 package com.backend.api.Service.Impl;
 
 import com.backend.api.Dto.Request.BoardDto;
+import com.backend.api.Dto.Request.MoveBoardDto;
 import com.backend.api.Entity.Board;
 import com.backend.api.Entity.User;
+import com.backend.api.Exception.InvalidCardStateException;
 import com.backend.api.Mapper.BoardMapper;
 import com.backend.api.Repository.BoardRepository;
 import com.backend.api.Repository.UserRepository;
@@ -35,11 +37,15 @@ public class BoardServiceImpl implements BoardService {
         User currentUser = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new EntityNotFoundException(USER_NOT_LOGGED_IN));
         board.setCreateUser(currentUser);
-
+        Integer maxPosition = boardRepository.findMaxPosition();
+        if (maxPosition == null) {
+            maxPosition = -1;
+        }
+        board.setPosition(maxPosition + 1);
         Board savedBoard = boardRepository.save(board);
-
         return BoardMapper.mapToBoardToDto(savedBoard);
     }
+
 
     @Override
     public List<BoardDto> getAllBoard() {
@@ -79,4 +85,42 @@ public class BoardServiceImpl implements BoardService {
         }
         boardRepository.deleteById(boardId);
     }
+
+    //Code Update Position (MoveBoard)
+    @Override
+    public boolean moveBoard(MoveBoardDto moveBoardDto, Integer boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new InvalidCardStateException("Board not found with id " + boardId));
+        Integer newPosition = moveBoardDto.getNewPosition();
+        updateBoardPosition(board, newPosition);
+        return true;
+    }
+    private void updateBoardPosition(Board board, Integer newPosition) {
+        Integer currentPosition = board.getPosition();
+        if (!currentPosition.equals(newPosition)) {
+            updatePositions(currentPosition, newPosition);
+            board.setPosition(newPosition);
+            boardRepository.save(board);
+        }
+    }
+
+    private void updatePositions(Integer currentPosition, Integer newPosition) {
+        List<Board> boards = boardRepository.findAll();
+        for (Board b : boards) {
+            if (currentPosition < newPosition) {
+                if (b.getPosition() > currentPosition && b.getPosition() <= newPosition) {
+                    b.setPosition(b.getPosition() - 1);
+                    boardRepository.save(b);
+                }
+            }
+            else {
+                if (b.getPosition() >= newPosition && b.getPosition() < currentPosition) {
+                    b.setPosition(b.getPosition() + 1);
+                    boardRepository.save(b);
+                }
+            }
+        }
+    }
+
+
 }

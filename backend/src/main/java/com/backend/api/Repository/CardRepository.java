@@ -12,5 +12,4 @@ public interface CardRepository extends JpaRepository<Card, Integer> {
     @Query("SELECT COALESCE(MAX(c.position), 0) FROM Card c WHERE c.board = :board")
     int findMaxPositionByBoard(@Param("board") Board board);
     List<Card> findByBoardId(Integer boardId);
-    List<Card> findByBoard(Board board);
 }

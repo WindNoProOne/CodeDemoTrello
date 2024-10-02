@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class BoardDto {
     private Integer id;
     private String name;
+    private Integer position;
     private LocalDateTime createDate;
     private Integer createUserId;
 }
