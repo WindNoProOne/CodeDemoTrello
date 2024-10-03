@@ -15,6 +15,7 @@ import {
 } from "@mantine/core";
 import { GoogleButton } from "./GoogleButton";
 import { TwitterButton } from "./TwitterButton";
+import { Link } from "react-router-dom";
 
 export function Register(props: PaperProps) {
   const form = useForm({
@@ -103,9 +104,9 @@ export function Register(props: PaperProps) {
           </Stack>
 
           <Group justify="space-between" mt="xl">
-            <Anchor component="button" type="button" color="dimmed" size="xs">
+            <Link to="/login" type="button" color="dimmed">
               Already have an account? Login
-            </Anchor>
+            </Link>
             <Button type="submit" radius="xl" fullWidth>
               Register
             </Button>

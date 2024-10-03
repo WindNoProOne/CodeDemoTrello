@@ -1,4 +1,3 @@
-import { useForm } from "@mantine/form";
 import {
   TextInput,
   PasswordInput,
@@ -10,30 +9,42 @@ import {
   Anchor,
   Stack,
   Container,
-  PaperProps,
+  Notification,
 } from "@mantine/core";
 import { GoogleButton } from "./GoogleButton";
 import { TwitterButton } from "./TwitterButton";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import AuthService from "../../service/AuthService";
 
-export function Login(props: PaperProps) {
-  const form = useForm({
-    initialValues: {
-      email: "",
-      password: "",
-      terms: true,
-    },
+export function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-    validate: {
-      email: (val) => (/^\S+@\S+$/.test(val) ? null : "Invalid email"),
-      password: (val) =>
-        val.length <= 6 ? "Password must include at least 6 characters" : null,
-    },
-  });
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+
+    try {
+      const response = await AuthService.login({
+        item: { id: "", name: "", email, password },
+      });
+      if (response && response.token) {
+        localStorage.setItem("authToken", response.token);
+        localStorage.setItem("role", response.role || "");
+
+        navigate("/");
+      }
+    } catch (err) {
+      setError("Login failed. Please check your credentials.");
+    }
+  };
 
   return (
     <Container mt="10%" size={530}>
-      <Paper radius="md" p="xl" withBorder {...props}>
+      <Paper radius="md" p="xl">
         <Text size="lg" w={500}>
           Welcome to Trello, login with
         </Text>
@@ -49,32 +60,37 @@ export function Login(props: PaperProps) {
           my="lg"
         />
 
-        <form onSubmit={form.onSubmit(() => {})}>
+        <form onSubmit={handleSubmit}>
           <Stack>
             <TextInput
               required
               label="Email"
               placeholder="Enter your email"
-              value={form.values.email}
-              onChange={(event) =>
-                form.setFieldValue("email", event.currentTarget.value)
-              }
-              error={form.errors.email}
               radius="md"
+              value={email}
+              onChange={(event) => setEmail(event.currentTarget.value)}
             />
 
             <PasswordInput
               required
               label="Password"
               placeholder="Your password"
-              value={form.values.password}
-              onChange={(event) =>
-                form.setFieldValue("password", event.currentTarget.value)
-              }
-              error={form.errors.password}
               radius="md"
+              value={password}
+              onChange={(event) => setPassword(event.currentTarget.value)}
             />
           </Stack>
+
+          {error && (
+            <Notification
+              title="Error"
+              color="red"
+              mt="md"
+              onClose={() => setError(null)}
+            >
+              {error}
+            </Notification>
+          )}
 
           <Group justify="space-between" mt="xl">
             <Link to="/register">
